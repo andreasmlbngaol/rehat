@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.gitignore
+docs
+*.pdf
+*.log
+.env
+.env.*
+!.env.example
+lib/generated/prisma

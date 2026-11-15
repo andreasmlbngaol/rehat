@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Aset Swagger UI hasil salinan (bukan kode sumber).
+    "public/swagger-ui/**",
+    // Hasil pengujian.
+    "coverage/**",
+    "test-results/**",
+    "playwright-report/**",
+    "blob-report/**",
   ]),
 ]);
 
