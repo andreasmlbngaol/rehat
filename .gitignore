@@ -12,6 +12,11 @@
 
 # testing
 /coverage
+/test-results
+/tests/e2e/.auth
+/playwright-report
+/blob-report
+/.vitest
 
 # next.js
 /.next/
@@ -36,6 +41,7 @@
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -43,3 +49,8 @@
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+*.pdf
+/lib/generated/prisma
+
+# generated swagger assets
+/public/swagger-ui/
