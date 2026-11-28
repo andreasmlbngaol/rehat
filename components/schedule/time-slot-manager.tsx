@@ -24,6 +24,7 @@ import {
   CheckLineIcon,
   PlusLineIcon,
 } from "@/components/ui/figma-icons";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InlineLoading } from "@/components/ui/loading-state";
 import { ListSkeleton } from "@/components/ui/page-skeleton";
@@ -57,13 +58,6 @@ function slotDuration(slot: TimeSlot): number {
       60_000,
   );
 }
-
-const timeOptions = Array.from({ length: 48 }, (_, index) => {
-  const minutes = index * 30;
-  const hours = String(Math.floor(minutes / 60)).padStart(2, "0");
-  const rest = String(minutes % 60).padStart(2, "0");
-  return `${hours}:${rest}`;
-});
 
 function DateField({
   id,
@@ -535,19 +529,15 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
 
             <div className="space-y-2">
               <Label htmlFor="slot-time">Waktu (WIB) *</Label>
-              <Select
+              <Input
                 id="slot-time"
+                type="time"
                 value={createTime}
                 onChange={(event) => setCreateTime(event.target.value)}
+                step={60}
                 className="h-11"
                 required
-              >
-                {timeOptions.map((time) => (
-                  <option key={time} value={time}>
-                    {time.replace(":", ".")}
-                  </option>
-                ))}
-              </Select>
+              />
             </div>
 
             <div className="space-y-2">
@@ -624,19 +614,15 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
 
             <div className="space-y-2">
               <Label htmlFor="edit-time">Waktu (WIB) *</Label>
-              <Select
+              <Input
                 id="edit-time"
+                type="time"
                 value={editTime}
                 onChange={(event) => setEditTime(event.target.value)}
+                step={60}
                 className="h-11"
                 required
-              >
-                {timeOptions.map((time) => (
-                  <option key={time} value={time}>
-                    {time.replace(":", ".")}
-                  </option>
-                ))}
-              </Select>
+              />
             </div>
 
             <Button
