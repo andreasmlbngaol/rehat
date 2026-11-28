@@ -618,7 +618,7 @@ export function buildOpenApiDocument() {
       title: "REHAT API",
       version: "1.0.0",
       description:
-        "API backend REHAT — konseling psikologi daring. Semua respons memakai envelope " +
+        "API backend REHAT - konseling psikologi daring. Semua respons memakai envelope " +
         "`{ success, data, message, errors, code }`. Autentikasi memakai cookie sesi Supabase " +
         "yang diatur oleh `@supabase/ssr`; tidak ada token yang disimpan di localStorage.",
     },

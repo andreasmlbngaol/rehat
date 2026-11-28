@@ -105,7 +105,7 @@ function assert(condition: unknown, message: string): asserts condition {
 function expectStatus(result: ApiResult, expected: number, label: string) {
   if (result.status !== expected) {
     throw new Error(
-      `${label}: mengharapkan ${expected}, menerima ${result.status} — ${
+      `${label}: mengharapkan ${expected}, menerima ${result.status} - ${
         result.body?.message ?? result.text.slice(0, 300)
       }`,
     );

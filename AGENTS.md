@@ -2,13 +2,13 @@
 
 ## This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+This version has breaking changes - APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+This block is written and re-added by `next dev` - verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
 
-# REHAT — Rencana Pengerjaan Backend
+# REHAT - Rencana Pengerjaan Backend
 
 Sumber kebenaran: `docs/SRS Kelompok 5.pdf` (93 halaman).
 Ruang lingkup dokumen ini: **backend saja**. UI/UX belum selesai, sehingga seluruh pekerjaan
@@ -27,9 +27,9 @@ halaman diagnostik minimal).
 | Package manager | Bun 1.4.3 (`bun.lock`) |
 | Styling | Tailwind CSS 4.3.4 + shadcn/ui (`radix-nova`) |
 | ORM | Prisma 7.10.1, generator `prisma-client`, output `lib/generated/prisma` |
-| Database | Supabase PostgreSQL 17.6 — session pooler port 5432 |
+| Database | Supabase PostgreSQL 17.6 - session pooler port 5432 |
 | Auth | Supabase Auth (belum dikonfigurasi di kode) |
-| Integrasi | Midtrans Snap sandbox, Zoom S2S OAuth, Resend, Cloudflare R2 — kredensial sudah ada di `.env` dan sudah diverifikasi |
+| Integrasi | Midtrans Snap sandbox, Zoom S2S OAuth, Resend, Cloudflare R2 - kredensial sudah ada di `.env` dan sudah diverifikasi |
 | Docker | `Dockerfile` + `compose.yaml` target `dev` (Bun) |
 | Skema Prisma | Masih kosong (hanya generator + datasource) |
 | `supabase/` | Kosong |
@@ -63,7 +63,7 @@ memakai kondisi aktual, bukan versi di SRS.
 
 ## 1. Keputusan Arsitektur
 
-### 1.1 Gaya API — Route Handlers, bukan Server Actions
+### 1.1 Gaya API - Route Handlers, bukan Server Actions
 
 SRS §5.2.16 mewajibkan dokumentasi OpenAPI + Swagger UI untuk endpoint internal. Server Actions
 tidak dapat didokumentasikan sebagai endpoint HTTP. Karena itu seluruh backend diekspos sebagai
@@ -347,7 +347,7 @@ components/
   ui/          # button, dialog, table, skeleton, page-skeleton, loading-state, dll.
   auth/ profile/ schedule/ session/ providers/
 lib/hooks/use-api.ts        # fetch + status + loading/refreshing + refetch
-lib/auth/redirect.ts        # safeRedirectPath() — validasi tujuan redirect
+lib/auth/redirect.ts        # safeRedirectPath() - validasi tujuan redirect
 ```
 
 Route group `(overview)` dipakai supaya `loading.tsx` hanya membungkus halaman
@@ -630,28 +630,28 @@ Kolom **Akses**: `public`, `auth`, `patient`, `counselor`, `admin`.
 
 Setiap tahap harus lulus `bun run typecheck` dan `bun run lint` sebelum lanjut.
 
-### Fase 0 — Fondasi
+### Fase 0 - Fondasi
 
 **Tujuan:** menyiapkan dependensi, konfigurasi, dan utilitas dasar.
 
 Pekerjaan:
 1. Tambah dependensi: `@prisma/adapter-pg`, `pg`, `zod`; dev: `@types/pg`.
-2. `lib/env.ts` — validasi environment dengan zod, pisahkan `serverEnv` dan `publicEnv`;
+2. `lib/env.ts` - validasi environment dengan zod, pisahkan `serverEnv` dan `publicEnv`;
    gagal cepat saat boot bila ada yang kosong.
-3. `lib/prisma.ts` — singleton `PrismaClient` + `PrismaPg`, `globalThis` guard untuk dev.
-4. `lib/api/response.ts` — `ok()`, `fail()`.
-5. `lib/api/errors.ts` — `AppError` + pemetaan kode.
-6. `lib/api/handler.ts` — wrapper `route({ roles, schema, handler })` yang menangani auth,
+3. `lib/prisma.ts` - singleton `PrismaClient` + `PrismaPg`, `globalThis` guard untuk dev.
+4. `lib/api/response.ts` - `ok()`, `fail()`.
+5. `lib/api/errors.ts` - `AppError` + pemetaan kode.
+6. `lib/api/handler.ts` - wrapper `route({ roles, schema, handler })` yang menangani auth,
    validasi, rate limit, dan error.
-7. `lib/api/rate-limit.ts` — fixed-window in-memory (dokumentasikan batasannya).
-8. `lib/time.ts` — helper UTC/WIB.
+7. `lib/api/rate-limit.ts` - fixed-window in-memory (dokumentasikan batasannya).
+8. `lib/time.ts` - helper UTC/WIB.
 9. `.env` + `.env.example`: tambah `NEXT_PUBLIC_SITE_URL`, `BOOKING_PAYMENT_TTL_MINUTES`,
    `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SUPABASE_SEND_EMAIL_HOOK_SECRET`.
 10. `package.json`: script `typecheck`, `seed`, `openapi`, `db:setup`.
 
 **Selesai bila:** `bun run typecheck` lulus; `bun run db:generate` menghasilkan client baru.
 
-### Fase 1 — Skema Database, Migrasi, SQL Supabase
+### Fase 1 - Skema Database, Migrasi, SQL Supabase
 
 **Tujuan:** seluruh 13 tabel + enum ada di database, trigger dan RLS terpasang.
 
@@ -664,7 +664,7 @@ Pekerjaan:
      lalu simpan ke `prisma/migrations/0001_init/migration.sql` dan jalankan
      `bunx prisma migrate deploy`.
 3. `prisma/sql/0001_supabase_auth.sql` dan `0002_rls_realtime.sql`.
-4. `scripts/apply-supabase-sql.ts` — eksekusi kedua file via `pg` Client (idempoten).
+4. `scripts/apply-supabase-sql.ts` - eksekusi kedua file via `pg` Client (idempoten).
 5. `prisma/seed.ts`.
 
 **Selesai bila:**
@@ -673,14 +673,14 @@ Pekerjaan:
 - `select * from pg_policies where schemaname='public'` menunjukkan policy chat;
 - seed idempoten (dijalankan dua kali tidak menggandakan data).
 
-### Fase 2 — Autentikasi, Profil, Avatar
+### Fase 2 - Autentikasi, Profil, Avatar
 
 **Tujuan:** alur akun lengkap dan guard peran.
 
 Pekerjaan:
 1. `lib/supabase/{server,client,admin}.ts`.
-2. `proxy.ts` — refresh cookie, matcher mengecualikan `/api`, aset, dan `/auth/*`.
-3. `lib/auth/dal.ts` — `getCurrentUser`, `requireUser`, `requireRole`, `requireActiveUser`.
+2. `proxy.ts` - refresh cookie, matcher mengecualikan `/api`, aset, dan `/auth/*`.
+3. `lib/auth/dal.ts` - `getCurrentUser`, `requireUser`, `requireRole`, `requireActiveUser`.
 4. Route auth (§4.3) + `/auth/callback` + `/auth/confirm`.
 5. `lib/integrations/resend.ts` + `/api/v1/auth/email-hook` (verifikasi secret, template Indonesia).
 6. `lib/integrations/r2.ts` + endpoint avatar.
@@ -692,7 +692,7 @@ Pekerjaan:
 - Pasien membuka endpoint admin → 403;
 - upload PNG 1 MB sukses, file .exe ditolak 422, file 6 MB ditolak 422.
 
-### Fase 3 — Katalog Layanan dan Konselor
+### Fase 3 - Katalog Layanan dan Konselor
 
 **Tujuan:** data master untuk pemesanan.
 
@@ -710,7 +710,7 @@ Pekerjaan:
 - admin bisa membuat layanan dengan 1 atau 2 metode;
 - perubahan layanan tidak mengubah snapshot booking lama (diuji di Fase 5).
 
-### Fase 4 — Time Slot
+### Fase 4 - Time Slot
 
 **Tujuan:** ketersediaan jadwal yang konsisten.
 
@@ -728,7 +728,7 @@ Pekerjaan:
 - slot `booked` tidak bisa dihapus;
 - pasien tidak melihat slot `held`/`booked`.
 
-### Fase 5 — Pemesanan
+### Fase 5 - Pemesanan
 
 **Tujuan:** booking aman terhadap permintaan bersamaan.
 
@@ -743,7 +743,7 @@ Pekerjaan:
    - idempotency: bila `idempotencyKey` sudah ada, kembalikan booking yang sama (200).
 3. Generator `booking_code`: `RHT-YYMMDD-XXXX` (acak, unik, retry saat bentrok).
 4. Endpoint list/detail dengan filter peran.
-5. `expireStaleBookings()` — dipanggil sebelum list/detail dan dari endpoint health/cron;
+5. `expireStaleBookings()` - dipanggil sebelum list/detail dan dari endpoint health/cron;
    melepas slot dan menandai booking `expired`.
 
 **Selesai bila:**
@@ -752,12 +752,12 @@ Pekerjaan:
 - booking kedaluwarsa melepas slot;
 - pasien lain tidak bisa melihat detail booking.
 
-### Fase 6 — Pembayaran Midtrans
+### Fase 6 - Pembayaran Midtrans
 
 **Tujuan:** Snap + webhook end-to-end di sandbox.
 
 Pekerjaan:
-1. `lib/integrations/midtrans.ts` — Snap client, `createTransaction`, expiry.
+1. `lib/integrations/midtrans.ts` - Snap client, `createTransaction`, expiry.
 2. `POST /bookings/:id/payments`:
    - tolak bila booking bukan `pending_payment` atau sudah `success`;
    - bila ada payment `pending` yang belum kedaluwarsa → kembalikan `snapToken` yang ada;
@@ -765,7 +765,7 @@ Pekerjaan:
 3. `POST /webhooks/midtrans` sesuai §1.5.
 4. `after()` → bila `method = zoom` panggil `zoom.service.createMeeting`.
 5. `GET /payments`, `GET /bookings/:id/payments`.
-6. `scripts/simulate-midtrans-webhook.ts` — membuat signature valid untuk pengujian lokal.
+6. `scripts/simulate-midtrans-webhook.ts` - membuat signature valid untuk pengujian lokal.
 
 **Selesai bila:**
 - Snap token diperoleh dari sandbox;
@@ -775,12 +775,12 @@ Pekerjaan:
 - sukses → booking `confirmed`, slot `booked`, sesi dibuat;
 - gagal/expire → slot kembali `available`.
 
-### Fase 7 — Sesi dan Chat
+### Fase 7 - Sesi dan Chat
 
 **Tujuan:** chat realtime dengan riwayat dan batas waktu.
 
 Pekerjaan:
-1. `lib/services/session.service.ts` — pembuatan sesi saat pembayaran sukses,
+1. `lib/services/session.service.ts` - pembuatan sesi saat pembayaran sukses,
    rekonsiliasi status (`scheduled` → `active` → `completed`) berbasis waktu.
 2. `lib/services/chat.service.ts`:
    - validasi peserta, status sesi, jendela waktu;
@@ -797,12 +797,12 @@ Pekerjaan:
 - pesan > 2000 karakter ditolak 422;
 - Realtime INSERT diterima client uji dengan JWT peserta.
 
-### Fase 8 — Integrasi Zoom
+### Fase 8 - Integrasi Zoom
 
 **Tujuan:** meeting otomatis dan retry aman.
 
 Pekerjaan:
-1. `lib/integrations/zoom.ts` — token cache, create meeting, error mapping.
+1. `lib/integrations/zoom.ts` - token cache, create meeting, error mapping.
 2. `lib/services/zoom.service.ts`:
    - `ensureMeeting(sessionId)` idempoten (cek existing);
    - `attempt_count`, `last_error`, status `pending/created/failed`;
@@ -818,13 +818,13 @@ Pekerjaan:
 - pasien tidak pernah menerima `start_url`;
 - admin bisa retry dan melihat `last_error`.
 
-### Fase 9 — Dashboard, Riwayat, dan Administrasi
+### Fase 9 - Dashboard, Riwayat, dan Administrasi
 
 **Tujuan:** seluruh data operasional dan ringkasan.
 
 Pekerjaan:
 1. `lib/services/admin.service.ts`.
-2. `GET /admin/stats` — jumlah layanan aktif, konselor aktif, booking, transaksi, sesi.
+2. `GET /admin/stats` - jumlah layanan aktif, konselor aktif, booking, transaksi, sesi.
 3. Daftar dengan pencarian, filter status/metode/tanggal, pagination ≤ 50.
 4. Riwayat: default urut jadwal terbaru, snapshot layanan/harga.
 5. Larangan admin melihat isi chat dan `start_url`.
@@ -836,15 +836,15 @@ Pekerjaan:
 - tidak ada field terlarang di respons admin;
 - data historis tetap tampil setelah layanan/counselors dinonaktifkan.
 
-### Fase 10 — OpenAPI, Swagger, dan Verifikasi Akhir
+### Fase 10 - OpenAPI, Swagger, dan Verifikasi Akhir
 
 **Tujuan:** dokumentasi API dan bukti kualitas.
 
 Pekerjaan:
 1. Anotasi `@openapi` pada setiap route.
 2. `lib/openapi/registry.ts` + `scripts/generate-openapi.ts` → `public/openapi.json`.
-3. `app/docs/page.tsx` — Swagger UI client component (`ssr: false`).
-4. `scripts/smoke.ts` — skenario: signup → login → lihat layanan → booking → webhook sukses →
+3. `app/docs/page.tsx` - Swagger UI client component (`ssr: false`).
+4. `scripts/smoke.ts` - skenario: signup → login → lihat layanan → booking → webhook sukses →
    sesi → kirim pesan → retry Zoom → admin stats.
 5. Jalankan `bun run lint`, `bun run typecheck`, `bun run build`.
 6. Uji `docker compose up` masih berjalan.
@@ -990,17 +990,17 @@ Zoom, Resend, serta R2.
 
 | Fase | Status | Bukti verifikasi |
 |---|---|---|
-| 0 — Fondasi | selesai | `bun run typecheck`, `bun run db:generate` |
-| 1 — Skema & migrasi | selesai | 12 tabel + 7 enum, trigger `handle_new_user`, RLS + publikasi Realtime |
-| 2 — Auth, profil, avatar | selesai | signup → verifikasi → login → profil; avatar R2; guard peran |
-| 3 — Katalog | selesai | layanan/counselors nonaktif tidak tampil; CRUD admin |
-| 4 — Time slot | selesai | overlap 409, slot lampau 422, slot `booked` tidak dapat dihapus |
-| 5 — Pemesanan | selesai | idempotensi, dua request paralel → satu 201 satu 409 |
-| 6 — Pembayaran | selesai | Snap token, webhook valid/ganda/invalid/amount mismatch |
-| 7 — Sesi & chat | selesai | jendela sesi, idempotensi pesan, admin 403, pagination |
-| 8 — Zoom | selesai | meeting dibuat, idempoten, `start_url` hanya konselor |
-| 9 — Dashboard & admin | selesai | stats, pengguna, booking, pembayaran, sesi, retry Zoom |
-| 10 — OpenAPI & verifikasi | selesai | 47 path / 59 operasi, `/docs`, smoke test, build produksi |
+| 0 - Fondasi | selesai | `bun run typecheck`, `bun run db:generate` |
+| 1 - Skema & migrasi | selesai | 12 tabel + 7 enum, trigger `handle_new_user`, RLS + publikasi Realtime |
+| 2 - Auth, profil, avatar | selesai | signup → verifikasi → login → profil; avatar R2; guard peran |
+| 3 - Katalog | selesai | layanan/counselors nonaktif tidak tampil; CRUD admin |
+| 4 - Time slot | selesai | overlap 409, slot lampau 422, slot `booked` tidak dapat dihapus |
+| 5 - Pemesanan | selesai | idempotensi, dua request paralel → satu 201 satu 409 |
+| 6 - Pembayaran | selesai | Snap token, webhook valid/ganda/invalid/amount mismatch |
+| 7 - Sesi & chat | selesai | jendela sesi, idempotensi pesan, admin 403, pagination |
+| 8 - Zoom | selesai | meeting dibuat, idempoten, `start_url` hanya konselor |
+| 9 - Dashboard & admin | selesai | stats, pengguna, booking, pembayaran, sesi, retry Zoom |
+| 10 - OpenAPI & verifikasi | selesai | 47 path / 59 operasi, `/docs`, smoke test, build produksi |
 | Frontend | selesai (fungsional) | semua halaman publik, auth, pasien, konselor, admin, 404/error/loading |
 | Observability | selesai | JSON logging + redaksi, health live/ready, `captureException`, CI |
 | Testing | selesai | 319 Vitest + 43 E2E Chromium (20 alur + 23 a11y) + 21 lintas browser; coverage 94,92% baris |
@@ -1068,7 +1068,7 @@ docker compose up -d --build
 **Sudah otomatis**
 - Unit: validasi, DTO, error/envelope, rate limit, redirect, peran, waktu, format,
   logger, status sesi, signature webhook, OpenAPI, `apiFetch`, pelaporan error klien.
-- Integrasi (database nyata): booking, pembayaran, chat, sesi, time slot, webhook, admin —
+- Integrasi (database nyata): booking, pembayaran, chat, sesi, time slot, webhook, admin -
   termasuk idempotensi, overlap, IDOR, dan rekonsiliasi Status API.
 - Zoom: `ensureZoomMeeting` (idempoten, gagal, retry, truncation) dan integrasi OAuth/API
   dengan `fetch` di-mock.

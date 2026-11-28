@@ -113,7 +113,7 @@ export const SESSION_STATUS_LABEL: Record<SessionStatus, string> = {
 export const SLOT_STATUS_LABEL: Record<TimeSlotStatus, string> = {
   available: "Tersedia",
   held: "Ditahan",
-  booked: "Terisi",
+  booked: "Terpesan",
 };
 
 export const METHOD_LABEL: Record<CounselingMethod, string> = {
@@ -129,12 +129,12 @@ export const ROLE_LABEL: Record<UserRole, string> = {
 
 export function bookingStatusTone(
   status: BookingStatus,
-): "default" | "secondary" | "destructive" | "outline" {
+): "success" | "warning" | "destructive" | "outline" {
   switch (status) {
     case "confirmed":
-      return "default";
+      return "success";
     case "pending_payment":
-      return "secondary";
+      return "warning";
     case "cancelled":
     case "expired":
       return "destructive";
@@ -145,12 +145,12 @@ export function bookingStatusTone(
 
 export function paymentStatusTone(
   status: PaymentStatus,
-): "default" | "secondary" | "destructive" | "outline" {
+): "success" | "warning" | "destructive" | "outline" {
   switch (status) {
     case "success":
-      return "default";
+      return "success";
     case "pending":
-      return "secondary";
+      return "warning";
     case "failed":
     case "cancelled":
     case "expired":
@@ -162,14 +162,14 @@ export function paymentStatusTone(
 
 export function sessionStatusTone(
   status: SessionStatus,
-): "default" | "secondary" | "destructive" | "outline" {
+): "success" | "info" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "active":
-      return "default";
+      return "success";
     case "scheduled":
-      return "secondary";
+      return "info";
     case "completed":
-      return "outline";
+      return "secondary";
     default:
       return "outline";
   }
