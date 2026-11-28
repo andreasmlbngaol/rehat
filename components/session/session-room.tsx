@@ -31,7 +31,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ZoomJoinButton } from "@/components/session/zoom-join-button";
 import { apiFetch, errorMessage } from "@/lib/api/client";
+import { mergeMessages } from "@/lib/chat";
 import { useApi } from "@/lib/hooks/use-api";
+import { useChatSync } from "@/lib/hooks/use-chat-sync";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   METHOD_LABEL,
@@ -100,6 +102,12 @@ export function SessionRoom({ role }: { role: "patient" | "counselor" }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  const handleSyncedMessages = useCallback((items: ChatMessage[]) => {
+    setMessages((current) => mergeMessages(current, items));
+  }, []);
+
+  const syncMessages = useChatSync(session?.id ?? null, handleSyncedMessages);
+
   useEffect(() => {
     if (!initialMessages.data) return;
     setMessages(initialMessages.data.items);
@@ -139,14 +147,16 @@ export function SessionRoom({ role }: { role: "patient" | "counselor" }) {
             );
           },
         )
-        .subscribe();
+        .subscribe((status: string) => {
+          if (status === "SUBSCRIBED") void syncMessages();
+        });
     })();
 
     return () => {
       cancelled = true;
       if (channel) void supabase.removeChannel(channel);
     };
-  }, [session]);
+  }, [session, syncMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });

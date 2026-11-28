@@ -24,6 +24,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, errorMessage } from "@/lib/api/client";
+import { mergeMessages } from "@/lib/chat";
+import { useChatSync } from "@/lib/hooks/use-chat-sync";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   METHOD_LABEL,
@@ -359,6 +361,12 @@ function SessionChat({
   const [ending, setEnding] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const handleSyncedMessages = useCallback((items: ChatMessage[]) => {
+    setMessages((current) => mergeMessages(current, items));
+  }, []);
+
+  const syncMessages = useChatSync(session.id, handleSyncedMessages);
+
   const other = role === "patient" ? session.counselor : session.patient;
   const status = ended ? "completed" : session.status;
   const canSend = Boolean(
@@ -423,14 +431,16 @@ function SessionChat({
             );
           },
         )
-        .subscribe();
+        .subscribe((status: string) => {
+          if (status === "SUBSCRIBED") void syncMessages();
+        });
     })();
 
     return () => {
       cancelled = true;
       if (channel) void supabase.removeChannel(channel);
     };
-  }, [session]);
+  }, [session, syncMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
