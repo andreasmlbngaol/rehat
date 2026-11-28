@@ -69,17 +69,17 @@ test.describe("alur admin", () => {
     const responsePromise = page.waitForResponse(
       (response) =>
         response.url().includes("/api/v1/admin/users") &&
-        response.url().includes("q=ayu.counselor"),
+        response.url().includes("q=admin"),
     );
 
-    await search.fill("ayu.counselor");
+    await search.fill("admin");
     await page.getByRole("button", { name: /^cari$/i }).click();
 
     const response = await responsePromise;
     expect(response.status()).toBe(200);
 
     await expect(
-      page.getByText("ayu.counselor@booroong.online").first(),
+      page.getByText("admin@rehat.com").first(),
     ).toBeVisible({ timeout: 20_000 });
   });
 });

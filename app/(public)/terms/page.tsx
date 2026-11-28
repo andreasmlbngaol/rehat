@@ -33,8 +33,9 @@ const sections = [
   {
     title: "4. Pembatalan dan pengembalian dana",
     body: [
-      "Pembatalan oleh pasien sebelum jadwal dapat diajukan melalui kontak. Kebijakan pengembalian dana mengikuti ketentuan yang berlaku dan dapat berbeda untuk setiap kasus.",
-      "Jika sesi dibatalkan oleh konselor atau terjadi gangguan teknis dari pihak REHAT, pengguna berhak atas penjadwalan ulang atau pengembalian dana.",
+      "Pembatalan belum tersedia langsung di aplikasi. Ajukan pembatalan melalui email ke support@booroong.online sebelum jadwal sesi dimulai.",
+      "Tim REHAT akan mengonfirmasi status pembatalan dan jumlah pengembalian dana melalui email yang sama.",
+      "Jika sesi dibatalkan oleh konselor atau gagal karena gangguan teknis dari pihak REHAT, kamu berhak atas penjadwalan ulang atau pengembalian dana penuh.",
       "Biaya layanan pihak ketiga yang sudah terpakai dapat tidak dikembalikan.",
     ],
   },
@@ -91,7 +92,7 @@ export default function TermsPage() {
         Syarat &amp; Ketentuan
       </h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        Terakhir diperbarui: 7 November 2026
+        Terakhir diperbarui: 28 November 2026
       </p>
 
       <div className="mt-8 space-y-8">
@@ -128,9 +129,8 @@ export default function TermsPage() {
       </div>
 
       <p className="mt-8 text-xs text-muted-foreground">
-        Dokumen ini disusun untuk keperluan tugas kelompok dan bukan merupakan
-        nasihat hukum. Sebelum digunakan secara komersial, mintalah tinjauan
-        hukum.
+        Dokumen ini berlaku sejak tanggal pembaruan di atas. Versi terbaru
+        selalu tersedia di halaman ini.
       </p>
     </div>
   );

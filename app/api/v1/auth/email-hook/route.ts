@@ -128,12 +128,12 @@ function buildEmail(action: string, link: string, name: string) {
         <p style="margin:0 0 24px;font-size:13px;word-break:break-all;color:#2f6f5e;">${safeLink}</p>
         <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">Abaikan email ini jika Anda tidak merasa melakukan permintaan tersebut.</p>
       </div>
-      <p style="margin:24px 0 0;font-size:12px;color:#9ca3af;text-align:center;">REHAT — layanan pendukung konseling, bukan layanan darurat.</p>
+      <p style="margin:24px 0 0;font-size:12px;color:#9ca3af;text-align:center;">REHAT - layanan pendukung konseling, bukan layanan darurat.</p>
     </div>
   </body>
 </html>`;
 
-  const text = `Halo ${name},\n\n${template.intro}\n\n${template.cta}: ${link}\n\nAbaikan email ini jika Anda tidak merasa melakukan permintaan tersebut.\n\n— Tim REHAT`;
+  const text = `Halo ${name},\n\n${template.intro}\n\n${template.cta}: ${link}\n\nAbaikan email ini jika Anda tidak merasa melakukan permintaan tersebut.\n\n- Tim REHAT`;
 
   return { subject: template.subject, html, text };
 }
@@ -169,11 +169,9 @@ export const POST = apiRoute({ auth: "none" }, async ({ request }) => {
   link.searchParams.set("type", data.email_action_type);
   link.searchParams.set(
     "next",
-    data.email_action_type === "recovery"
+    data.email_action_type === "recovery" || data.email_action_type === "invite"
       ? "/reset-password"
-      : data.email_action_type === "invite"
-        ? "/counselor"
-        : "/dashboard",
+      : "/dashboard",
   );
 
   const name = payload.user?.user_metadata?.full_name ?? email.split("@")[0]!;

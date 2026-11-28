@@ -1,4 +1,4 @@
-// Skema data REHAT — mengacu pada SRS §4.1 dan §4.2.
+// Skema data REHAT - mengacu pada SRS §4.1 dan §4.2.
 // Semua waktu disimpan sebagai timestamptz (UTC).
 
 generator client {

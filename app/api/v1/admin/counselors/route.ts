@@ -45,7 +45,9 @@ export const POST = apiRoute(
       input.email,
       {
         data: { full_name: input.fullName },
-        redirectTo: `${request.nextUrl.origin}/auth/confirm?next=/counselor`,
+        // Admin API memakai alur implisit: token kembali di fragment URL,
+        // jadi harus mendarat di halaman client yang bisa membacanya.
+        redirectTo: `${request.nextUrl.origin}/auth/continue?next=/reset-password`,
       },
     );
 

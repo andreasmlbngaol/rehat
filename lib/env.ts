@@ -55,7 +55,7 @@ export function serverEnv(): ServerEnv {
     const detail = parsed.error.issues
       .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
       .join("; ");
-    throw new Error(`Konfigurasi environment tidak valid — ${detail}`);
+    throw new Error(`Konfigurasi environment tidak valid - ${detail}`);
   }
 
   cached = parsed.data;

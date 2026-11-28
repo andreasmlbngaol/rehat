@@ -26,9 +26,10 @@ export function effectiveStatus(
   scheduledEnd: Date,
   now: Date = new Date(),
 ): "scheduled" | "active" | "completed" {
+  if (status === "completed") return "completed";
   if (now >= scheduledEnd) return "completed";
   if (now >= scheduledStart) return "active";
-  return status === "completed" ? "completed" : "scheduled";
+  return "scheduled";
 }
 
 export async function reconcileSessionStatus(
@@ -148,6 +149,41 @@ export async function reconcileAllSessions(): Promise<void> {
   if (updates.length > 0) {
     await prisma.$transaction(updates);
   }
+}
+
+export async function endSession(
+  sessionId: string,
+  userId: string,
+): Promise<SessionRelations> {
+  const session = await prisma.counselingSession.findUnique({
+    where: { id: sessionId },
+    include: sessionInclude,
+  });
+
+  if (!session) {
+    throw errors.notFound("Sesi konseling tidak ditemukan.");
+  }
+
+  if (
+    session.booking.patientId !== userId &&
+    session.booking.counselorId !== userId
+  ) {
+    throw errors.forbidden("Anda tidak terlibat dalam sesi ini.");
+  }
+
+  if (session.status === "completed") {
+    return session;
+  }
+
+  if (session.status !== "active") {
+    throw errors.conflict("Sesi belum berlangsung.");
+  }
+
+  return prisma.counselingSession.update({
+    where: { id: sessionId },
+    data: { status: "completed", endedAt: new Date() },
+    include: sessionInclude,
+  });
 }
 
 export async function getSessionForViewer(

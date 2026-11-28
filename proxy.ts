@@ -67,7 +67,52 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const pathname = request.nextUrl.pathname;
+  const isAuthPage =
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/forgot-password" ||
+    pathname === "/verify-email";
+  const isDashboard =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/counselor") ||
+    pathname.startsWith("/admin");
+
+  function redirectTo(target: string) {
+    const url = new URL(target, request.url);
+    const redirect = NextResponse.redirect(url);
+
+    for (const header of response.headers.getSetCookie()) {
+      redirect.headers.append("set-cookie", header);
+    }
+
+    redirect.headers.set(cspHeader, csp);
+    return redirect;
+  }
+
+  if (user) {
+    const verified = Boolean(user.email_confirmed_at);
+
+    if (!verified) {
+      if (pathname !== "/verify-email") {
+        return redirectTo("/verify-email");
+      }
+    } else if (isAuthPage) {
+      return redirectTo("/dashboard");
+    }
+  } else if (isDashboard) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set(
+      "next",
+      `${pathname}${request.nextUrl.search}`,
+    );
+    return redirectTo(`${loginUrl.pathname}${loginUrl.search}`);
+  }
 
   return response;
 }
