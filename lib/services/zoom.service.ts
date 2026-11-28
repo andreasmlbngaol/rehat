@@ -48,7 +48,7 @@ export async function ensureZoomMeeting(sessionId: string): Promise<void> {
 
   try {
     const created = await createZoomMeeting({
-      topic: `Konseling REHAT — ${session.booking.serviceName}`,
+      topic: `Konseling REHAT - ${session.booking.serviceName}`,
       startTime: session.booking.scheduledStart,
       durationMinutes: meeting.durationMinutes,
       agenda: `Sesi konseling bersama ${session.booking.counselor.fullName}.`,
