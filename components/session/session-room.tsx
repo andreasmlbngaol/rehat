@@ -12,6 +12,7 @@ import {
   PaperPlaneTilt,
   VideoCamera,
 } from "@phosphor-icons/react/dist/ssr";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Alert } from "@/components/ui/alert";
@@ -110,29 +111,40 @@ export function SessionRoom({ role }: { role: "patient" | "counselor" }) {
     if (!session) return;
 
     const supabase = createSupabaseBrowserClient();
-    const channel = supabase
-      .channel(`session-${session.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chat_messages",
-          filter: `session_id=eq.${session.id}`,
-        },
-        (payload: { new: ChatMessageRow }) => {
-          const row = payload.new;
-          setMessages((current) =>
-            current.some((message) => message.id === row.id)
-              ? current
-              : [...current, toMessage(row, session)],
-          );
-        },
-      )
-      .subscribe();
+    let channel: RealtimeChannel | null = null;
+    let cancelled = false;
+
+    void (async () => {
+      // Channel harus join setelah token sesi terpasang. Tanpa ini channel
+      // bisa join sebagai anon sehingga RLS menolak semua event masuk.
+      await supabase.realtime.setAuth();
+      if (cancelled) return;
+
+      channel = supabase
+        .channel(`session-${session.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "chat_messages",
+            filter: `session_id=eq.${session.id}`,
+          },
+          (payload: { new: ChatMessageRow }) => {
+            const row = payload.new;
+            setMessages((current) =>
+              current.some((message) => message.id === row.id)
+                ? current
+                : [...current, toMessage(row, session)],
+            );
+          },
+        )
+        .subscribe();
+    })();
 
     return () => {
-      void supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) void supabase.removeChannel(channel);
     };
   }, [session]);
 
