@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Clock,
   LockSimple,
   SpinnerGap,
   X,
 } from "@phosphor-icons/react/dist/ssr";
+import { cn } from "cn";
+import { Popover } from "radix-ui";
 import { toast } from "sonner";
 import { useSession } from "@/components/providers/session-provider";
 import { Alert } from "@/components/ui/alert";
@@ -24,7 +26,6 @@ import {
   CheckLineIcon,
   PlusLineIcon,
 } from "@/components/ui/figma-icons";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InlineLoading } from "@/components/ui/loading-state";
 import { ListSkeleton } from "@/components/ui/page-skeleton";
@@ -94,6 +95,140 @@ function DateField({
         tabIndex={-1}
       />
     </div>
+  );
+}
+
+const HOURS = Array.from({ length: 24 }, (_, index) =>
+  String(index).padStart(2, "0"),
+);
+
+const MINUTES = Array.from({ length: 60 }, (_, index) =>
+  String(index).padStart(2, "0"),
+);
+
+function TimeField({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const hourListRef = useRef<HTMLDivElement>(null);
+  const minuteListRef = useRef<HTMLDivElement>(null);
+  const [hour = "09", minute = "00"] = value.split(":");
+
+  useEffect(() => {
+    if (!open) return;
+
+    const center = (
+      container: HTMLDivElement | null,
+      attribute: "hour" | "minute",
+      selected: string,
+    ) => {
+      if (!container) return;
+      const item = container.querySelector<HTMLElement>(
+        `[data-${attribute}="${selected}"]`,
+      );
+      if (!item) return;
+      container.scrollTop =
+        item.offsetTop - container.clientHeight / 2 + item.clientHeight / 2;
+    };
+
+    const frame = requestAnimationFrame(() => {
+      center(hourListRef.current, "hour", hour);
+      center(minuteListRef.current, "minute", minute);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [open, hour, minute]);
+
+  function pickHour(nextHour: string) {
+    onChange(`${nextHour}:${minute}`);
+  }
+
+  function pickMinute(nextMinute: string) {
+    onChange(`${hour}:${nextMinute}`);
+    setOpen(false);
+  }
+
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <Popover.Trigger asChild>
+        <button
+          id={id}
+          type="button"
+          className="flex h-11 w-full items-center justify-between rounded-[9px] border border-[#c4cec5] bg-white px-3 text-left text-[12px] leading-[19.2px] text-[#203b33] transition-colors hover:bg-[#f5f7f5] dark:border-border dark:bg-card dark:text-foreground"
+        >
+          <span>{`${hour}:${minute}`}</span>
+          <Clock className="size-4 text-[#68746d] dark:text-muted-foreground" />
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          align="start"
+          sideOffset={6}
+          className="z-50 w-[220px] rounded-[10px] border border-[#e1e7e1] bg-white p-3 shadow-lg outline-none dark:border-border dark:bg-card"
+        >
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <p className="mb-1 text-[11px] font-medium text-[#68746d] dark:text-muted-foreground">
+                Jam
+              </p>
+              <div
+                ref={hourListRef}
+                className="relative h-48 overflow-y-auto pr-1"
+              >
+                {HOURS.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    data-hour={item}
+                    onClick={() => pickHour(item)}
+                    className={cn(
+                      "flex h-8 w-full items-center justify-center rounded-[6px] text-[12px] transition-colors",
+                      item === hour
+                        ? "bg-[#203b33] text-white dark:bg-primary dark:text-primary-foreground"
+                        : "text-[#203b33] hover:bg-[#f5f7f5] dark:text-foreground dark:hover:bg-muted",
+                    )}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1">
+              <p className="mb-1 text-[11px] font-medium text-[#68746d] dark:text-muted-foreground">
+                Menit
+              </p>
+              <div
+                ref={minuteListRef}
+                className="relative h-48 overflow-y-auto pr-1"
+              >
+                {MINUTES.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    data-minute={item}
+                    onClick={() => pickMinute(item)}
+                    className={cn(
+                      "flex h-8 w-full items-center justify-center rounded-[6px] text-[12px] transition-colors",
+                      item === minute
+                        ? "bg-[#203b33] text-white dark:bg-primary dark:text-primary-foreground"
+                        : "text-[#203b33] hover:bg-[#f5f7f5] dark:text-foreground dark:hover:bg-muted",
+                    )}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
 
@@ -529,14 +664,10 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
 
             <div className="space-y-2">
               <Label htmlFor="slot-time">Waktu (WIB) *</Label>
-              <Input
+              <TimeField
                 id="slot-time"
-                type="time"
                 value={createTime}
-                onChange={(event) => setCreateTime(event.target.value)}
-                step={60}
-                className="h-11"
-                required
+                onChange={setCreateTime}
               />
             </div>
 
@@ -614,14 +745,10 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
 
             <div className="space-y-2">
               <Label htmlFor="edit-time">Waktu (WIB) *</Label>
-              <Input
+              <TimeField
                 id="edit-time"
-                type="time"
                 value={editTime}
-                onChange={(event) => setEditTime(event.target.value)}
-                step={60}
-                className="h-11"
-                required
+                onChange={setEditTime}
               />
             </div>
 
