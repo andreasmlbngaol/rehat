@@ -169,11 +169,9 @@ export const POST = apiRoute({ auth: "none" }, async ({ request }) => {
   link.searchParams.set("type", data.email_action_type);
   link.searchParams.set(
     "next",
-    data.email_action_type === "recovery"
+    data.email_action_type === "recovery" || data.email_action_type === "invite"
       ? "/reset-password"
-      : data.email_action_type === "invite"
-        ? "/counselor"
-        : "/dashboard",
+      : "/dashboard",
   );
 
   const name = payload.user?.user_metadata?.full_name ?? email.split("@")[0]!;

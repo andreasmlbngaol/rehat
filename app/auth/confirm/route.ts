@@ -21,8 +21,7 @@ function normalizeType(value: string | null): EmailOtpType | null {
 }
 
 function fallbackFor(type: EmailOtpType): string {
-  if (type === "recovery") return "/reset-password";
-  if (type === "invite") return "/counselor";
+  if (type === "recovery" || type === "invite") return "/reset-password";
   return "/dashboard";
 }
 

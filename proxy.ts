@@ -77,7 +77,6 @@ export async function proxy(request: NextRequest) {
     pathname === "/login" ||
     pathname === "/register" ||
     pathname === "/forgot-password" ||
-    pathname === "/reset-password" ||
     pathname === "/verify-email";
   const isDashboard =
     pathname.startsWith("/dashboard") ||
