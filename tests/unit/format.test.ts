@@ -139,23 +139,23 @@ describe("label dan tone status", () => {
   });
 
   it("tone pemesanan sesuai status", () => {
-    expect(bookingStatusTone("confirmed")).toBe("default");
-    expect(bookingStatusTone("pending_payment")).toBe("secondary");
+    expect(bookingStatusTone("confirmed")).toBe("success");
+    expect(bookingStatusTone("pending_payment")).toBe("warning");
     expect(bookingStatusTone("cancelled")).toBe("destructive");
     expect(bookingStatusTone("expired")).toBe("destructive");
   });
 
   it("tone pembayaran sesuai status", () => {
-    expect(paymentStatusTone("success")).toBe("default");
-    expect(paymentStatusTone("pending")).toBe("secondary");
+    expect(paymentStatusTone("success")).toBe("success");
+    expect(paymentStatusTone("pending")).toBe("warning");
     expect(paymentStatusTone("failed")).toBe("destructive");
     expect(paymentStatusTone("cancelled")).toBe("destructive");
     expect(paymentStatusTone("expired")).toBe("destructive");
   });
 
   it("tone sesi sesuai status", () => {
-    expect(sessionStatusTone("active")).toBe("default");
-    expect(sessionStatusTone("scheduled")).toBe("secondary");
-    expect(sessionStatusTone("completed")).toBe("outline");
+    expect(sessionStatusTone("active")).toBe("success");
+    expect(sessionStatusTone("scheduled")).toBe("info");
+    expect(sessionStatusTone("completed")).toBe("secondary");
   });
 });
