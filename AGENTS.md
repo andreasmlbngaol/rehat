@@ -465,12 +465,10 @@ Tidak ada policy lain: seluruh akses lain lewat backend dengan role `postgres` y
 
 `prisma/seed.ts` (idempoten, memakai upsert):
 
-- Admin dari `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` (dibuat via Supabase Admin API,
-  `email_confirm: true`).
-- 3 layanan contoh: Konseling Individu (60 menit, chat+zoom), Konseling Pasangan (90 menit, zoom),
-  Konseling Singkat (30 menit, chat).
-- 2 konselor contoh + `counselor_services`.
-- Time slot 7 hari ke depan untuk tiap konselor.
+- Admin dari `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` (default `admin@rehat.com`, dibuat
+  via Supabase Admin API, `email_confirm: true`).
+- Seed tidak membuat layanan, konselor, atau patient. Layanan dan konselor dibuat lewat
+  dashboard admin; patient mendaftar sendiri lewat `/register`.
 
 ---
 
