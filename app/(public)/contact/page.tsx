@@ -50,9 +50,9 @@ export default function ContactPage() {
           <CardContent className="text-sm text-muted-foreground">
             <a
               className="font-medium text-foreground underline underline-offset-2 transition-colors hover:text-primary"
-              href="mailto:support@booroong.online"
+              href="mailto:lgandre45@gmail.com"
             >
-              support@booroong.online
+              lgandre45@gmail.com
             </a>
             <p className="mt-1">Balasan dalam 1×24 jam pada hari kerja.</p>
           </CardContent>

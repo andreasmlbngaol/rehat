@@ -85,7 +85,7 @@ const sections = [
       "Menarik persetujuan dan menutup akun. Layanan yang sedang berjalan mungkin tidak dapat dilanjutkan.",
       "Mengajukan keberatan atas pemrosesan data tertentu.",
       "Mengadu ke lembaga pengawas perlindungan data pribadi jika kamu menilai pemrosesan kami melanggar hukum.",
-      "Permintaan dan keluhan dikirim ke support@booroong.online.",
+      "Permintaan dan keluhan dikirim ke lgandre45@gmail.com.",
     ],
   },
   {
@@ -106,7 +106,7 @@ const sections = [
     title: "12. Pengendali data",
     body: [
       "Pengendali data pribadi untuk layanan ini adalah tim REHAT.",
-      "Kontak: support@booroong.online.",
+      "Kontak: lgandre45@gmail.com.",
     ],
   },
   {
@@ -151,9 +151,9 @@ export default function PrivacyPage() {
           Hubungi kami di{" "}
           <a
             className="underline underline-offset-2 transition-colors hover:text-primary"
-            href="mailto:support@booroong.online"
+            href="mailto:lgandre45@gmail.com"
           >
-            support@booroong.online
+            lgandre45@gmail.com
           </a>{" "}
           atau melalui{" "}
           <Link className="underline underline-offset-2 transition-colors hover:text-primary" href="/contact">

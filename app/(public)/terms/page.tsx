@@ -33,7 +33,7 @@ const sections = [
   {
     title: "4. Pembatalan dan pengembalian dana",
     body: [
-      "Pembatalan belum tersedia langsung di aplikasi. Ajukan pembatalan melalui email ke support@booroong.online sebelum jadwal sesi dimulai.",
+      "Pembatalan belum tersedia langsung di aplikasi. Ajukan pembatalan melalui email ke lgandre45@gmail.com sebelum jadwal sesi dimulai.",
       "Tim REHAT akan mengonfirmasi status pembatalan dan jumlah pengembalian dana melalui email yang sama.",
       "Jika sesi dibatalkan oleh konselor atau gagal karena gangguan teknis dari pihak REHAT, kamu berhak atas penjadwalan ulang atau pengembalian dana penuh.",
       "Biaya layanan pihak ketiga yang sudah terpakai dapat tidak dikembalikan.",
@@ -116,9 +116,9 @@ export default function TermsPage() {
           Hubungi{" "}
           <a
             className="underline underline-offset-2 transition-colors hover:text-primary"
-            href="mailto:support@booroong.online"
+            href="mailto:lgandre45@gmail.com"
           >
-            support@booroong.online
+            lgandre45@gmail.com
           </a>{" "}
           atau kunjungi{" "}
           <Link className="underline underline-offset-2 transition-colors hover:text-primary" href="/contact">
