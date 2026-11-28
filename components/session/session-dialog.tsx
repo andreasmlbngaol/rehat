@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PaperPlaneTilt, SpinnerGap, X } from "@phosphor-icons/react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, errorMessage } from "@/lib/api/client";
+import { mergeMessages } from "@/lib/chat";
+import { useChatSync } from "@/lib/hooks/use-chat-sync";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   METHOD_LABEL,
@@ -358,6 +361,12 @@ function SessionChat({
   const [ending, setEnding] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const handleSyncedMessages = useCallback((items: ChatMessage[]) => {
+    setMessages((current) => mergeMessages(current, items));
+  }, []);
+
+  const syncMessages = useChatSync(session.id, handleSyncedMessages);
+
   const other = role === "patient" ? session.counselor : session.patient;
   const status = ended ? "completed" : session.status;
   const canSend = Boolean(
@@ -394,31 +403,44 @@ function SessionChat({
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
-    const channel = supabase
-      .channel(`session-dialog-${session.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chat_messages",
-          filter: `session_id=eq.${session.id}`,
-        },
-        (payload: { new: ChatMessageRow }) => {
-          const row = payload.new;
-          setMessages((current) =>
-            current.some((message) => message.id === row.id)
-              ? current
-              : [...current, toMessage(row, session)],
-          );
-        },
-      )
-      .subscribe();
+    let channel: RealtimeChannel | null = null;
+    let cancelled = false;
+
+    void (async () => {
+      // Channel harus join setelah token sesi terpasang. Tanpa ini channel
+      // bisa join sebagai anon sehingga RLS menolak semua event masuk.
+      await supabase.realtime.setAuth();
+      if (cancelled) return;
+
+      channel = supabase
+        .channel(`session-dialog-${session.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "chat_messages",
+            filter: `session_id=eq.${session.id}`,
+          },
+          (payload: { new: ChatMessageRow }) => {
+            const row = payload.new;
+            setMessages((current) =>
+              current.some((message) => message.id === row.id)
+                ? current
+                : [...current, toMessage(row, session)],
+            );
+          },
+        )
+        .subscribe((status: string) => {
+          if (status === "SUBSCRIBED") void syncMessages();
+        });
+    })();
 
     return () => {
-      void supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) void supabase.removeChannel(channel);
     };
-  }, [session]);
+  }, [session, syncMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });

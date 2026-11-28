@@ -12,6 +12,7 @@ import {
   PaperPlaneTilt,
   VideoCamera,
 } from "@phosphor-icons/react/dist/ssr";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Alert } from "@/components/ui/alert";
@@ -30,7 +31,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ZoomJoinButton } from "@/components/session/zoom-join-button";
 import { apiFetch, errorMessage } from "@/lib/api/client";
+import { mergeMessages } from "@/lib/chat";
 import { useApi } from "@/lib/hooks/use-api";
+import { useChatSync } from "@/lib/hooks/use-chat-sync";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   METHOD_LABEL,
@@ -99,6 +102,12 @@ export function SessionRoom({ role }: { role: "patient" | "counselor" }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  const handleSyncedMessages = useCallback((items: ChatMessage[]) => {
+    setMessages((current) => mergeMessages(current, items));
+  }, []);
+
+  const syncMessages = useChatSync(session?.id ?? null, handleSyncedMessages);
+
   useEffect(() => {
     if (!initialMessages.data) return;
     setMessages(initialMessages.data.items);
@@ -110,31 +119,44 @@ export function SessionRoom({ role }: { role: "patient" | "counselor" }) {
     if (!session) return;
 
     const supabase = createSupabaseBrowserClient();
-    const channel = supabase
-      .channel(`session-${session.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chat_messages",
-          filter: `session_id=eq.${session.id}`,
-        },
-        (payload: { new: ChatMessageRow }) => {
-          const row = payload.new;
-          setMessages((current) =>
-            current.some((message) => message.id === row.id)
-              ? current
-              : [...current, toMessage(row, session)],
-          );
-        },
-      )
-      .subscribe();
+    let channel: RealtimeChannel | null = null;
+    let cancelled = false;
+
+    void (async () => {
+      // Channel harus join setelah token sesi terpasang. Tanpa ini channel
+      // bisa join sebagai anon sehingga RLS menolak semua event masuk.
+      await supabase.realtime.setAuth();
+      if (cancelled) return;
+
+      channel = supabase
+        .channel(`session-${session.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "chat_messages",
+            filter: `session_id=eq.${session.id}`,
+          },
+          (payload: { new: ChatMessageRow }) => {
+            const row = payload.new;
+            setMessages((current) =>
+              current.some((message) => message.id === row.id)
+                ? current
+                : [...current, toMessage(row, session)],
+            );
+          },
+        )
+        .subscribe((status: string) => {
+          if (status === "SUBSCRIBED") void syncMessages();
+        });
+    })();
 
     return () => {
-      void supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) void supabase.removeChannel(channel);
     };
-  }, [session]);
+  }, [session, syncMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
