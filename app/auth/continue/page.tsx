@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SpinnerGap } from "@phosphor-icons/react";
-import type { Session } from "@supabase/supabase-js";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { Alert } from "@/components/ui/alert";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -30,16 +29,32 @@ export default function AuthContinuePage() {
     const supabase = createSupabaseBrowserClient();
     let cancelled = false;
 
-    void supabase.auth
-      .getSession()
-      .then(({ data }: { data: { session: Session | null } }) => {
+    void (async () => {
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const accessToken = hash.get("access_token");
+      const refreshToken = hash.get("refresh_token");
+
+      if (accessToken && refreshToken) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
         if (cancelled) return;
-        if (data.session) {
+        if (!error) {
           router.replace(next);
-        } else {
-          setFailed(true);
+          return;
         }
-      });
+        console.error("[auth/continue] gagal menyimpan sesi:", error.message);
+      }
+
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (data.session) {
+        router.replace(next);
+      } else {
+        setFailed(true);
+      }
+    })();
 
     return () => {
       cancelled = true;
