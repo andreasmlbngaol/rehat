@@ -39,6 +39,7 @@ import {
   formatDateInput,
   formatDateTimeInput,
   formatTime,
+  todayInput,
 } from "@/lib/format";
 import type {
   Counselor,
@@ -51,6 +52,30 @@ type Mode = "counselor" | "admin";
 
 function wibInputToIso(value: string): string {
   return new Date(`${value}:00+07:00`).toISOString();
+}
+
+function wibNowInput(): { date: string; hour: string; minute: string } {
+  const value = formatDateTimeInput(new Date());
+  return {
+    date: value.slice(0, 10),
+    hour: value.slice(11, 13),
+    minute: value.slice(14, 16),
+  };
+}
+
+function nextWibMinute(): { date: string; time: string } {
+  const value = formatDateTimeInput(new Date(Date.now() + 60_000));
+  return { date: value.slice(0, 10), time: value.slice(11, 16) };
+}
+
+function isPastWib(date: string, time: string): boolean {
+  return new Date(`${date}T${time}:00+07:00`).getTime() <= Date.now();
+}
+
+function defaultSlotStart(): { date: string; time: string } {
+  const now = wibNowInput();
+  if (now.hour < "09") return { date: now.date, time: "09:00" };
+  return nextWibMinute();
 }
 
 function slotDuration(slot: TimeSlot): number {
@@ -90,7 +115,12 @@ function DateField({
         ref={ref}
         type="date"
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        min={todayInput()}
+        onChange={(event) => {
+          const next = event.target.value;
+          if (next && next < todayInput()) return;
+          onChange(next);
+        }}
         className="sr-only"
         tabIndex={-1}
       />
@@ -108,17 +138,33 @@ const MINUTES = Array.from({ length: 60 }, (_, index) =>
 
 function TimeField({
   id,
+  date,
   value,
   onChange,
 }: {
   id: string;
+  date: string;
   value: string;
   onChange: (value: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [now, setNow] = useState(wibNowInput);
   const hourListRef = useRef<HTMLDivElement>(null);
   const minuteListRef = useRef<HTMLDivElement>(null);
   const [hour = "09", minute = "00"] = value.split(":");
+  const isToday = date === now.date;
+
+  const hourDisabled = (item: string) => {
+    if (!isToday) return false;
+    if (item < now.hour) return true;
+    return item === now.hour && now.minute === "59";
+  };
+
+  const minuteDisabled = (item: string) => {
+    if (!isToday) return false;
+    if (hour < now.hour) return true;
+    return hour === now.hour && item <= now.minute;
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -146,6 +192,11 @@ function TimeField({
   }, [open, hour, minute]);
 
   function pickHour(nextHour: string) {
+    if (isToday && nextHour === now.hour && minute <= now.minute) {
+      const nextMinute = String(Number(now.minute) + 1).padStart(2, "0");
+      onChange(`${nextHour}:${nextMinute}`);
+      return;
+    }
     onChange(`${nextHour}:${minute}`);
   }
 
@@ -155,7 +206,13 @@ function TimeField({
   }
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
+    <Popover.Root
+      open={open}
+      onOpenChange={(next) => {
+        if (next) setNow(wibNowInput());
+        setOpen(next);
+      }}
+    >
       <Popover.Trigger asChild>
         <button
           id={id}
@@ -181,22 +238,28 @@ function TimeField({
                 ref={hourListRef}
                 className="relative h-48 overflow-y-auto pr-1"
               >
-                {HOURS.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    data-hour={item}
-                    onClick={() => pickHour(item)}
-                    className={cn(
-                      "flex h-8 w-full items-center justify-center rounded-[6px] text-[12px] transition-colors",
-                      item === hour
-                        ? "bg-[#203b33] text-white dark:bg-primary dark:text-primary-foreground"
-                        : "text-[#203b33] hover:bg-[#f5f7f5] dark:text-foreground dark:hover:bg-muted",
-                    )}
-                  >
-                    {item}
-                  </button>
-                ))}
+                {HOURS.map((item) => {
+                  const disabled = hourDisabled(item);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      data-hour={item}
+                      disabled={disabled}
+                      onClick={() => pickHour(item)}
+                      className={cn(
+                        "flex h-8 w-full items-center justify-center rounded-[6px] text-[12px] transition-colors",
+                        disabled
+                          ? "cursor-not-allowed text-[#a9b3ac] dark:text-muted-foreground/50"
+                          : item === hour
+                            ? "bg-[#203b33] text-white dark:bg-primary dark:text-primary-foreground"
+                            : "text-[#203b33] hover:bg-[#f5f7f5] dark:text-foreground dark:hover:bg-muted",
+                      )}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="flex-1">
@@ -207,22 +270,28 @@ function TimeField({
                 ref={minuteListRef}
                 className="relative h-48 overflow-y-auto pr-1"
               >
-                {MINUTES.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    data-minute={item}
-                    onClick={() => pickMinute(item)}
-                    className={cn(
-                      "flex h-8 w-full items-center justify-center rounded-[6px] text-[12px] transition-colors",
-                      item === minute
-                        ? "bg-[#203b33] text-white dark:bg-primary dark:text-primary-foreground"
-                        : "text-[#203b33] hover:bg-[#f5f7f5] dark:text-foreground dark:hover:bg-muted",
-                    )}
-                  >
-                    {item}
-                  </button>
-                ))}
+                {MINUTES.map((item) => {
+                  const disabled = minuteDisabled(item);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      data-minute={item}
+                      disabled={disabled}
+                      onClick={() => pickMinute(item)}
+                      className={cn(
+                        "flex h-8 w-full items-center justify-center rounded-[6px] text-[12px] transition-colors",
+                        disabled
+                          ? "cursor-not-allowed text-[#a9b3ac] dark:text-muted-foreground/50"
+                          : item === minute
+                            ? "bg-[#203b33] text-white dark:bg-primary dark:text-primary-foreground"
+                            : "text-[#203b33] hover:bg-[#f5f7f5] dark:text-foreground dark:hover:bg-muted",
+                      )}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -326,9 +395,10 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
   }
 
   function openCreate() {
+    const start = defaultSlotStart();
     setCreateError(null);
-    setCreateDate(formatDateInput(new Date()));
-    setCreateTime("09:00");
+    setCreateDate(start.date);
+    setCreateTime(start.time);
     setCreateService("");
     setCreateCounselor("");
     setCreateOpen(true);
@@ -336,6 +406,10 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
 
   async function submitCreate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isPastWib(createDate, createTime)) {
+      setCreateError("Waktu mulai harus di masa depan.");
+      return;
+    }
     setCreating(true);
     setCreateError(null);
 
@@ -379,6 +453,10 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
   async function submitEdit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editing) return;
+    if (isPastWib(editDate, editTime)) {
+      setEditError("Waktu mulai harus di masa depan.");
+      return;
+    }
     setSaving(true);
     setEditError(null);
 
@@ -658,7 +736,13 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
               <DateField
                 id="slot-date"
                 value={createDate}
-                onChange={setCreateDate}
+                onChange={(next) => {
+                  setCreateDate(next);
+                  if (isPastWib(next, createTime)) {
+                    const upcoming = nextWibMinute();
+                    if (upcoming.date === next) setCreateTime(upcoming.time);
+                  }
+                }}
               />
             </div>
 
@@ -666,6 +750,7 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
               <Label htmlFor="slot-time">Waktu (WIB) *</Label>
               <TimeField
                 id="slot-time"
+                date={createDate}
                 value={createTime}
                 onChange={setCreateTime}
               />
@@ -739,7 +824,13 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
               <DateField
                 id="edit-date"
                 value={editDate}
-                onChange={setEditDate}
+                onChange={(next) => {
+                  setEditDate(next);
+                  if (isPastWib(next, editTime)) {
+                    const upcoming = nextWibMinute();
+                    if (upcoming.date === next) setEditTime(upcoming.time);
+                  }
+                }}
               />
             </div>
 
@@ -747,6 +838,7 @@ export function TimeSlotManager({ mode }: { mode: Mode }) {
               <Label htmlFor="edit-time">Waktu (WIB) *</Label>
               <TimeField
                 id="edit-time"
+                date={editDate}
                 value={editTime}
                 onChange={setEditTime}
               />
