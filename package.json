@@ -2,6 +2,7 @@
   "name": "rehat",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "bun run swagger:assets && next dev",
     "build": "prisma generate && bun run openapi && bun run swagger:assets && next build",
